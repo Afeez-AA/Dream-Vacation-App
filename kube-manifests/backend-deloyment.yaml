@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: afeez511/dream-app-backend:v1
+        ports:
+        - containerPort: 3001
+        env:
+        - name: DATABASE_URL
+          value: postgresql://db_user_afz:password@postgres:5432/dreamvacations
+        - name: COUNTRIES_API_BASE_URL
+          value: https://restcountries.com/v3.1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+  type: LoadBalancer
+
+

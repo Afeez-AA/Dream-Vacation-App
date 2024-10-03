@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest  # Use the latest Postgres image
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: dreamvacations       # Database name
+        - name: POSTGRES_USER
+          value: db_user_afz          # Username for the database
+        - name: POSTGRES_PASSWORD
+          value: password             # Password for the database
+        # volumeMounts:
+        # - name: postgres-storage
+        #   mountPath: /var/lib/postgresql/data # Persist data inside the container
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc      # Referencing the PVC for data persistence
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432       # Port exposed to other services
+      targetPort: 5432 # Target port inside the pod
+  type: ClusterIP      # Internal service within the cluster
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi   # Request 1Gi of storage
